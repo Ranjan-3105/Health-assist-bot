@@ -3,6 +3,8 @@ import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
+api_key = os.getenv('OPENROUTER_API_KEY')
+print("Loaded API KEY:", api_key if api_key else "NOT FOUND")  # Debug: Show if key is loaded
 
 async def ask_agent(message, language):
     prompt = (
@@ -19,16 +21,25 @@ async def ask_agent(message, language):
         f"Respond in {language} using simple words."
     )
     headers = {
-        "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
+    print("Request headers:", headers)  # Debug: Show headers being sent
     payload = {
         "model": "anthropic/claude-3-haiku",
         "messages": [{"role": "user", "content": prompt}]
     }
+    print("Request payload:", payload)  # Debug: Show payload being sent
     async with httpx.AsyncClient() as client:
         response = await client.post("https://openrouter.ai/api/v1/chat/completions", json=payload, headers=headers)
-        data = response.json()
+        print("API status code:", response.status_code)  # Debug: Show response status
+        try:
+            data = response.json()
+        except Exception as e:
+            print("Error parsing response JSON:", e)
+            print("Raw response text:", response.text)
+            raise
+        print("API response data:", data)  # Debug: Show full API response
         if "choices" not in data:
             print("OpenRouter API error:", data)
             raise Exception(f"OpenRouter API error: {data}")
