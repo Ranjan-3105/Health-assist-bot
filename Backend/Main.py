@@ -5,6 +5,7 @@ from fastapi.responses import FileResponse
 import os
 from Services.openrouter import ask_agent
 from Services.tts import text_to_speech
+from Services.stt import speech_to_text
 
 
 app = FastAPI()
@@ -23,6 +24,7 @@ class Query(BaseModel):
     message: str
     language: str
 
+# text - to - speech
 @app.post("/api/ask")
 async def handle_query(query: Query):
     reply = await ask_agent(query.message, query.language)
