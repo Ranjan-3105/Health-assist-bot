@@ -14,7 +14,7 @@ async def ask_agent(message, language):
         f"- Suggest safe home remedies or first steps the user can take.\n"
         f"- Warn about any serious signs that mean the user should see a doctor or visit a hospital.\n"
         f"- Be concise, friendly, and use {language} for your response.\n"
-        f"- Avoid giving any medication names ( only give safe and common ones like paracetamol) or dosages.\n"
+        f"- Avoid giving any medication names ( only give safe and common one ) or dosages.\n"
         f"- If you do not know the answer, say so and encourage the user to consult a healthcare professional.\n"
         f"Respond in {language} using simple words."
     )
