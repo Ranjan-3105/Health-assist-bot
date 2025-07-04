@@ -1,11 +1,26 @@
-from gtts import gTTS
-import uuid
 import os
+import uuid
+from dotenv import load_dotenv
+from sarvamai import SarvamAI
+from sarvamai.play import save
 
-def text_to_speech(text: str, lang: str = 'hi') -> str:
-    filename = f"tts_{uuid.uuid4().hex}.mp3"
-    path = os.path.join("tts_output", filename)
-    os.makedirs("tts_output", exist_ok=True)
-    tts = gTTS(text=text, lang=lang)
-    tts.save(path)
-    return path
+load_dotenv()
+
+client = SarvamAI(api_subscription_key=os.getenv("SARVAM_API_KEY")) 
+
+def text_to_speech(text: str, lang: str = "od-IN") -> str:
+    filename = f"tts_{uuid.uuid4().hex}.wav"
+    output_dir = "tts_output"
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, filename)
+
+    tts = client.text_to_speech.convert(
+        text=text,
+        target_language_code=lang,
+        speaker="hitesh",
+        enable_preprocessing=True,
+    )
+
+    save(tts, output_path)
+    return output_path
+
