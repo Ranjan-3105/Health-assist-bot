@@ -1,123 +1,164 @@
 import React, { useState, useRef } from "react";
-import { Mic, Loader2, MessageCircle, Volume2, Download } from "lucide-react";
+import { Mic, Loader2, MessageCircle, Volume2, Send } from "lucide-react";
 
 interface ChatMessage {
   type: "user" | "bot";
   message: string;
   timestamp: Date;
+  audioUrl?: string; // Bot audio response
 }
 
 const VoiceInteraction: React.FC = () => {
-  const [isListening, setIsListening] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [audioURL, setAudioURL] = useState<string | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [hasRecordingStarted, setHasRecordingStarted] = useState(false);
-  const [isStopDisabled, setIsStopDisabled] = useState(false);
-
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
 
-  const handleVoiceInput = async () => {
-    if (isProcessing) return;
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [textInput, setTextInput] = useState("");
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Handle user text submit
+  const handleTextSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textInput.trim()) return;
+    await handleQuery(textInput);
+    setTextInput("");
+  };
+
+  // Unified handler for voice/text input
+  const handleQuery = async (input: string | Blob) => {
+    setIsProcessing(true);
+
+    const userMessage: ChatMessage = {
+      type: "user",
+      message: typeof input === "string" ? input : "🎤 Voice input",
+      timestamp: new Date(),
+    };
+
+    // ✅ Immediately add user message to chat
+    setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunks.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks.current, { type: "audio/webm" });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        setAudioURL(audioUrl); // Optional: for download button
-
-        // Prepare FormData
+      let res;
+      // text input from user
+      if (typeof input === "string") {
+        res = await fetch("http://127.0.0.1:8000/api/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: input,
+            language: "Hindi", // update dynamically if needed
+          }),
+        });
+      } else {
         const formData = new FormData();
-        const filename = `recording_${Date.now()}.webm`;
-        formData.append("file", audioBlob, filename);
+        formData.append("file", input, "voice_input.webm");
+        res = await fetch("/api/voice", {
+          method: "POST",
+          body: formData,
+        });
+      }
 
-        try {
-          const response = await fetch("http://localhost:8000/upload-audio", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (response.ok) {
-            console.log("Audio uploaded successfully!");
-          } else {
-            console.error("Upload failed:", await response.text());
-          }
-        } catch (error) {
-          console.error("Error sending audio to backend:", error);
-        }
-
-        // Simulated messages
-        const userMessage: ChatMessage = {
-          type: "user",
-          message: "Mujhe bukhar hai aur sar mein dard ho raha hai",
-          timestamp: new Date(),
-        };
-
-        const botMessage: ChatMessage = {
-          type: "bot",
-          message:
-            "Pani zyada piyen, aram karein. Agar bukhar 101°F se zyada hai toh doctor se milein. Paracetamol le sakte hain.",
-          timestamp: new Date(),
-        };
-
-        setMessages([userMessage, botMessage]);
-        setIsProcessing(false);
-        setIsListening(false);
-        setIsPaused(false);
-        setHasRecordingStarted(false);
+      const data = await res.json();
+      const botMessage: ChatMessage = {
+        type: "bot",
+        message: data.reply || "Sorry, I didn't understand that.",
+        timestamp: new Date(),
+        audioUrl: "http://127.0.0.1:8000" + data.audio_path,
       };
 
-      mediaRecorder.start();
-      setIsListening(true);
-      setIsProcessing(true);
-      setHasRecordingStarted(true);
+      // ✅ Append bot message after response
+      setMessages((prev) => [...prev, botMessage]);
     } catch (err) {
-      console.error("Microphone error:", err);
-      setIsListening(false);
+      console.error("Error:", err);
+    } finally {
       setIsProcessing(false);
-      setIsPaused(false);
-      setHasRecordingStarted(false);
+      setIsListening(false);
     }
   };
 
-  const handlePauseResume = () => {
-    if (!mediaRecorderRef.current) return;
+  // Voice recording simulation
+  const handleVoiceInput = async () => {
+    if (!isListening) {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunks.current = [];
 
-    if (isPaused) {
-      mediaRecorderRef.current.resume();
-      setIsPaused(false);
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks.current, {
+            type: "audio/webm",
+          });
+          const tempAudioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(tempAudioUrl);
+
+          audio.onloadedmetadata = async () => {
+            if (audio.duration === Infinity) {
+              audio.currentTime = 1e101;
+              audio.ontimeupdate = () => {
+                audio.ontimeupdate = null;
+                const fixedDuration = audio.duration;
+                console.log("✅ Audio Recorded:");
+                console.log(
+                  "🎧 Duration:",
+                  fixedDuration.toFixed(2),
+                  "seconds"
+                );
+                console.log(
+                  "📦 Size:",
+                  (audioBlob.size / 1024).toFixed(2),
+                  "KB"
+                );
+                console.log("📁 Type:", audioBlob.type);
+
+                URL.revokeObjectURL(tempAudioUrl);
+                handleQuery(audioBlob);
+              };
+            } else {
+              console.log("✅ Audio Recorded:");
+              console.log("🎧 Duration:", audio.duration.toFixed(2), "seconds");
+              console.log("📦 Size:", (audioBlob.size / 1024).toFixed(2), "KB");
+              console.log("📁 Type:", audioBlob.type);
+
+              URL.revokeObjectURL(tempAudioUrl);
+              await handleQuery(audioBlob);
+            }
+          };
+        };
+
+        mediaRecorder.start();
+        setIsListening(true);
+      } catch (err) {
+        console.error("Microphone error:", err);
+        alert("Microphone access denied or not available.");
+      }
     } else {
-      mediaRecorderRef.current.pause();
-      setIsPaused(true);
+      // Stop recording
+      setIsProcessing(true);
+      setIsListening(false);
+      mediaRecorderRef.current?.stop();
     }
   };
 
-  const handleStopRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-      setIsStopDisabled(true); // Disable the button
+  const handlePlayAudio = (url: string | undefined) => {
+    if (url && audioRef.current) {
+      audioRef.current.src = url;
+      audioRef.current.play();
     }
-  };
-
-  const handlePlayAudio = (message: string) => {
-    // Simulate text-to-speech
-    console.log("Playing audio:", message);
   };
 
   return (
@@ -127,179 +168,89 @@ const VoiceInteraction: React.FC = () => {
         <button
           onClick={handleVoiceInput}
           disabled={isProcessing}
-          aria-label={
-            isListening
-              ? "Listening to your voice"
-              : "Tap to speak your health question"
-          }
-          className={`w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full shadow-2xl transform transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus:ring-4 focus:ring-teal-300/50 ${
-            isListening
-              ? "bg-gradient-to-br from-red-400 to-pink-500 animate-pulse"
-              : "bg-gradient-to-br from-teal-400 to-emerald-500 hover:from-teal-500 hover:to-emerald-600"
-          } flex items-center justify-center group`}
+          className={`w-28 h-28 rounded-full shadow-2xl transition-all duration-300 ${
+            isListening ? "bg-pink-500 animate-pulse" : "bg-emerald-500"
+          } flex items-center justify-center`}
         >
           {isProcessing ? (
-            <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-white animate-spin" />
+            <Loader2 className="w-12 h-12 text-white animate-spin" />
           ) : (
-            <Mic className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 text-white group-hover:scale-110 transition-transform" />
+            <Mic className="w-12 h-12 text-white" />
           )}
         </button>
-        {hasRecordingStarted && (
-          <div className="flex gap-4 mt-4">
-            <button
-              onClick={handlePauseResume}
-              disabled={isStopDisabled}
-              className={`px-4 py-2 text-white rounded-full shadow hover:bg-yellow-600 transition ${
-                isStopDisabled
-                  ? "bg-red-300 cursor-not-allowed"
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
-            >
-              {isPaused ? "Resume" : "Pause"}
-            </button>
-            <button
-              onClick={handleStopRecording}
-              disabled={isStopDisabled}
-              className={`px-4 py-2 rounded-full shadow transition text-white ${
-                isStopDisabled
-                  ? "bg-red-300 cursor-not-allowed"
-                  : "bg-red-500 hover:bg-red-600"
-              }`}
-            >
-              Stop
-            </button>
-          </div>
-        )}
-
-        <div className="mt-3 sm:mt-4 text-center px-4">
-          <p className="text-base sm:text-lg font-semibold text-gray-700">
-            {isListening ? "Listening..." : "Tap to Speak"}
-          </p>
-          <p className="text-sm text-gray-600 mt-1">
-            {isListening ? "सुन रहा हूँ..." : "बोलने के लिए दबाएं"}
-          </p>
-          {!isListening && !isProcessing && (
-            <p className="text-xs text-gray-500 mt-2 max-w-xs mx-auto">
-              Hold and speak clearly about your health concern
-            </p>
-          )}
-        </div>
+        <p className="mt-3 text-gray-700 font-semibold">
+          {isListening ? "Tap to Stop" : "Tap to Speak"}
+        </p>
       </div>
 
       {/* Chat Container */}
-      {messages.length > 0 && (
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-xl border border-white/30 mx-2 sm:mx-0">
-          {/* Chat Header */}
-          <div className="flex items-center gap-3 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200/50">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate">
-                Health Consultation
-              </h3>
-              <p className="text-xs sm:text-sm text-gray-600">
-                स्वास्थ्य परामर्श
-              </p>
-            </div>
-          </div>
+      <div className="bg-white/90 rounded-2xl p-6 shadow-xl border">
+        <div className="mb-4">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <MessageCircle className="w-5 h-5" />
+            Health Consultation
+          </h3>
+        </div>
 
-          {/* Chat Messages */}
-          <div className="space-y-4 sm:space-y-6">
-            {messages.map((msg, index) => (
-              <div key={index} className="w-full">
-                <div
-                  className={`${
-                    msg.type === "user" ? "ml-0 sm:ml-8" : "mr-0 sm:mr-8"
-                  }`}
-                >
-                  <div
-                    className={`p-4 sm:px-6 sm:py-5 rounded-xl sm:rounded-2xl shadow-md ${
-                      msg.type === "user"
-                        ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-                        : "bg-gradient-to-br from-gray-50 to-white text-gray-800 border border-gray-200"
-                    }`}
-                  >
-                    {/* Message Header */}
-                    <div className="flex items-center justify-between mb-2 sm:mb-3">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <span className="text-base sm:text-lg flex-shrink-0">
-                          {msg.type === "user" ? "🧍‍♀️" : "🤖"}
-                        </span>
-                        <span
-                          className={`text-xs sm:text-sm font-semibold truncate ${
-                            msg.type === "user"
-                              ? "text-blue-100"
-                              : "text-gray-600"
-                          }`}
-                        >
-                          {msg.type === "user"
-                            ? "You said:"
-                            : "Health Assistant:"}
-                        </span>
-                      </div>
-                      {msg.type === "bot" && (
-                        <button
-                          onClick={() => handlePlayAudio(msg.message)}
-                          aria-label="Play audio response"
-                          className="p-2 rounded-full hover:bg-gray-100 transition-colors group flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-teal-300"
-                        >
-                          <Volume2 className="w-4 h-4 text-gray-600 group-hover:text-teal-600" />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Message Content */}
-                    <div
-                      className={`pl-4 sm:pl-8 ${
-                        msg.type === "user"
-                          ? "border-l-2 border-blue-300"
-                          : "border-l-2 border-teal-300"
-                      }`}
+        <div className="space-y-4">
+          {messages.map((msg, index) => (
+            <div key={index} className="w-full">
+              <div
+                className={`p-4 rounded-xl shadow-md ${
+                  msg.type === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-800"
+                }`}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold">
+                    {msg.type === "user" ? "🧍 You" : "🤖 Health Bot"}
+                  </span>
+                  {msg.type === "bot" && msg.audioUrl && (
+                    <button
+                      onClick={() => handlePlayAudio(msg.audioUrl)}
+                      className="p-2 hover:bg-gray-200 rounded-full"
                     >
-                      <p
-                        className={`text-sm sm:text-base leading-relaxed ${
-                          msg.type === "user" ? "text-white" : "text-gray-800"
-                        }`}
-                      >
-                        "{msg.message}"
-                      </p>
-                    </div>
-
-                    {/* Timestamp */}
-                    <div className="mt-2 sm:mt-3 text-right">
-                      <span
-                        className={`text-xs ${
-                          msg.type === "user"
-                            ? "text-blue-200"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {msg.timestamp.toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  </div>
+                      <Volume2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                <p>"{msg.message}"</p>
+                <div className="text-right text-xs mt-2">
+                  {msg.timestamp.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Quick Actions Footer */}
-          <div className="mt-4 sm:mt-6 pt-4 border-t border-gray-200/50">
-            <div className="flex flex-wrap gap-2 justify-center">
-              <button className="px-3 py-1.5 text-xs bg-teal-100 text-teal-700 rounded-full hover:bg-teal-200 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-300">
-                Ask Another Question
-              </button>
-              <button className="px-3 py-1.5 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300">
-                Save Advice
-              </button>
             </div>
-          </div>
+          ))}
         </div>
-      )}
+
+        {/* Text Input */}
+        <form
+          onSubmit={handleTextSubmit}
+          className="mt-6 flex items-center gap-2"
+        >
+          <input
+            type="text"
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Type your question..."
+            className="flex-1 px-4 py-2 border rounded-full shadow-sm focus:ring-2 focus:ring-teal-300"
+          />
+          <button
+            type="submit"
+            disabled={isProcessing}
+            className="p-2 bg-teal-500 rounded-full text-white hover:bg-teal-600 transition"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+        </form>
+      </div>
+
+      {/* Audio Element */}
+      <audio ref={audioRef} hidden />
     </div>
   );
 };
