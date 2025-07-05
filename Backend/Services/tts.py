@@ -74,6 +74,18 @@ def text_to_speech(text: str, lang: str = "od-IN") -> str:
     output_dir = "tts_output"
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, filename)
+    try:
+        tts = client.text_to_speech.convert(
+            text=text,
+            target_language_code=lang,
+            speaker="hitesh",
+            enable_preprocessing=True,
+        )
+        save(tts, output_path)
+        return output_path
+    except Exception as e:
+        print(f"SarvamAI TTS error: {e}")
+        raise
 
     tts = client.text_to_speech.convert(
         text=cleaned_text,  # 👈 use cleaned_text instead of raw text

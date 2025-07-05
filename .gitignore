@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# Python cache directories
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+.eggs/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -29,3 +41,4 @@ Backend/venv
 Backend/Services/mps_TEST
 
 Backend/Services/__pycache__
+Backend/tts_output/

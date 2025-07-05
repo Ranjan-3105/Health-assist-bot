@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
           <Heart className="w-5 h-5 text-red-400 animate-pulse" />
         </div>
         <p className="text-sm text-gray-600">
-          आपका स्वास्थ्य हमारी प्राथमिकता है
+          ଆପଣଙ୍କ ସ୍ୱାସ୍ଥ୍ୟ ଆମର ପ୍ରାଥମିକତା
         </p>
         <div className="mt-4 text-xs text-gray-500">
           <p>© 2025 Village Health Sathi • Made with ❤️ for rural communities</p>

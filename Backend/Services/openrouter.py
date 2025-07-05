@@ -5,59 +5,48 @@ from fastapi import HTTPException
 import traceback
 
 load_dotenv()
+api_key = os.getenv('OPENROUTER_API_KEY')
+# print("Loaded API KEY:", api_key if api_key else "NOT FOUND")  # Debug: Show if key is loaded
+print("Loaded API KEY:", repr(api_key) if api_key else "NOT FOUND")  # 👈 This will show hidden characters
 
-#ମୋର ଜ୍ୱର ହେଇଛି 
 
-async def ask_agent(message: str, language: str) -> str:
-    prompt = f"""
-    You are a rural health assistant AI. A user says: '{message}'.
-    clearly offer home care tips and suggest when to see a doctor.
-    Respond in {language} using simple and concise words.
-    """
-
+async def ask_agent(message, language):
+    prompt = (
+        f"You are a helpful, trustworthy rural health assistant AI. "
+        f"A user has asked the following health-related question:\n\n"
+        f"\"{message}\"\n\n"
+        f"Your job is to:\n"
+        f"- Clearly explain the possible causes and symptoms in simple, non-technical language.\n"
+        f"- Suggest safe home remedies or first steps the user can take.\n"
+        f"- Warn about any serious signs that mean the user should see a doctor or visit a hospital.\n"
+        f"- Be concise, friendly, and use {language} for your response.\n"
+        f"- Avoid giving any medication names ( only give safe and common one ) or dosages.\n"
+        f"- If you do not know the answer, say so and encourage the user to consult a healthcare professional.\n"
+        f"Respond in {language} using simple words."
+    )
     headers = {
-        "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+        "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json"
     }
-
+    print("Request headers:", headers)  # Debug: Show headers being sent
     payload = {
         "model": "meta-llama/llama-3-70b-instruct",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 1400
     }
-
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    print("Request payload:", payload)  # Debug: Show payload being sent
+    async with httpx.AsyncClient() as client:
+        response = await client.post("https://openrouter.ai/api/v1/chat/completions", json=payload, headers=headers)
+        print("API status code:", response.status_code)  # Debug: Show response status
         try:
-            response = await client.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                json=payload,
-                headers=headers
-            )
-        except httpx.ReadTimeout:
-            print("❌ Read timeout occurred")
-            raise HTTPException(status_code=504, detail="OpenRouter API timed out.")
-        except httpx.RequestError as e:
-            print(f"❌ Request error: {str(e)}")
-            raise HTTPException(status_code=502, detail=f"Connection error: {str(e)}")
+            data = response.json()
         except Exception as e:
-            print("❌ Unexpected exception:\n", traceback.format_exc())
-            raise HTTPException(status_code=500, detail="Unexpected error")
-
-    print("✅ Response status:", response.status_code)
-    print("✅ Response text:", response.text)
-
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=500,
-            detail=f"OpenRouter API error {response.status_code}: {response.text}"
-        )
-
-    data = response.json()
-
-    if "choices" not in data:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Unexpected response format from OpenRouter: {data}"
-        )
-
-    return data["choices"][0]["message"]["content"]
+            print("Error parsing response JSON:", e)
+            print("Raw response text:", response.text)
+            raise
+        print("API response data:", data)  # Debug: Show full API response
+        if "choices" not in data:
+            print("OpenRouter API error:", data)
+            raise Exception(f"OpenRouter API error: {data}")
+        print("OpenRouter API call successful.")
+        return data["choices"][0]["message"]["content"]

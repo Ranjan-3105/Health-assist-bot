@@ -44,9 +44,8 @@ async def voice_query(language: str, file: UploadFile = File(...)):
 
         # Ask agent (respond in local language)
         reply = await ask_agent(user_prompt, language)
-
-        # Text to Speech (local language)
-        lang_code = {"Hindi": "hi-IN", "Odia": "od-IN"}.get(language)
+        lang_map = {"Hindi": "hi-IN", "Odia": "od-IN"}
+        lang_code = lang_map.get(language)
         if not lang_code:
             raise HTTPException(status_code=400, detail="Unsupported language")
 
@@ -68,7 +67,13 @@ async def voice_query(language: str, file: UploadFile = File(...)):
 @app.post("/api/ask")
 async def handle_query(query: Query):
     reply = await ask_agent(query.message, query.language)
-    lang_code = "hi-IN" if query.language == "Hindi" else "od-IN"
+    # reply = "ଯଦି ଆପଣ ଭୋକ ଅନୁଭବ କରୁଛନ୍ତି, ତେବେ ଏହା ସାଧାରଣତଃ ଏକ ସଙ୍କେତ ଯେ ଆପଣଙ୍କ ଶରୀରକୁ ଖାଦ୍ୟ ଆବଶ୍ୟକ। " #Sample reply
+
+    lang_map = {"Hindi": "hi-IN", "Odia": "od-IN"}  # <-- fixed
+    lang_code = lang_map.get(query.language)
+    if not lang_code:
+        raise HTTPException(status_code=400, detail="Unsupported language")
+    # lang_code = "hi" if query.language == "Hindi" else "or"
     print("📨 Received query:", query.message, "| Language:", query.language)
     audio_path = text_to_speech(reply, lang=lang_code)
     return {"reply": reply, "audio_path": f"/api/audio/{os.path.basename(audio_path)}"}
