@@ -32,7 +32,7 @@ async def ask_agent(message, language):
     payload = {
         "model": "meta-llama/llama-3-70b-instruct",
         "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 1400
+        "max_tokens": 700
     }
     print("Request payload:", payload)  # Debug: Show payload being sent
     async with httpx.AsyncClient() as client:

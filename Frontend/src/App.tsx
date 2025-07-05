@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import WelcomeCard from './components/WelcomeCard';
 import VoiceInteraction from './components/VoiceInteraction';
@@ -6,14 +6,15 @@ import QuickAccessChips from './components/QuickAccessChips';
 import CallToAction from './components/CallToAction';
 import Footer from './components/Footer';
 
-function App() {
+const App: React.FC = () => {
+  const [selectedLanguage, setSelectedLanguage] = useState("Odia"); 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-teal-50 to-green-100">
-      <Header />
+      <Header  selectedLanguage={selectedLanguage} setSelectedLanguage={setSelectedLanguage}  />
       
       <main className="container mx-auto px-4 py-8">
         <WelcomeCard />
-        <VoiceInteraction />
+        <VoiceInteraction selectedLanguage={selectedLanguage} />
         <QuickAccessChips />
         <CallToAction />
         <Footer />

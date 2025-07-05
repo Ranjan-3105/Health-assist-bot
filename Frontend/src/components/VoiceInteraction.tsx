@@ -15,7 +15,11 @@ interface ChatMessage {
   audioUrl?: string; // Bot audio response
 }
 
-const VoiceInteraction: React.FC = () => {
+interface VoiceInteractionProps {
+  selectedLanguage: string;
+}
+
+const VoiceInteraction: React.FC<VoiceInteractionProps> = ({ selectedLanguage }) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
 
@@ -59,14 +63,14 @@ const VoiceInteraction: React.FC = () => {
           },
           body: JSON.stringify({
             message: input,
-            language: "Odia",
+            language: selectedLanguage,
           }),
         });
       } else {
         const formData = new FormData();
         formData.append("file", input, "voice_input.webm");
         res = await fetch(
-          "http://localhost:8000/api/voice-query?language=Odia",
+          `http://localhost:8000/api/voice-query?language=${selectedLanguage}`,
           {
             method: "POST",
             body: formData,
