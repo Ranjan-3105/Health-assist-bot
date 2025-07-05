@@ -1,65 +1,139 @@
-# 🩺 Village Health Assistant Bot 
+# 🩺 SahaAI – Village Health Assistant Bot
 
-AI-powered multilingual health assistant for rural communities, powered by 
--Gemini 
--SarvamAI
--Built with FastAPI + React 
--Supports Speech ↔️ Text in Odia & English
--Deployable via Firebase
+A **voice-first, AI-powered rural health assistant** that understands and responds in **Odia** and **English**.  
+Built for Bharat’s rural heartlands. Simple. Human. Scalable.
 
-# [Features]
-
-| Capability | Description |
-|------------|-------------|
-| **Voice Input** | Users can speak in our regional languages  Odia and the bot will understand |
-| **English Translation** | Gemini handles accurate speech-to-text and translation(Odia <->English) |
-| **Natural Voice Output** | Text responses are turned into realistic speech using SarvamAI |
-| **Contextual Chat** | Easily integrate Gemini for personalized answers |
-| **Frontend + Backend** | React + FastAPI architecture with modular `Services/` |
-| **Firebase Ready** | Comes with REST APIs ready to deploy on Firebase Cloud Functions |
+> 🧠 Powered by **Gemini** & **SarvamAI**  
+> ⚙️ Built with **FastAPI + React**  
+> 📱 Speech ↔️ Text in **Odia & English**  
+> 🚀 Ready for **Firebase Deployment**
 
 ---
 
-# [Tech Stack]
-           -img here-
-- **Backend**: FastAPI (Python)
-- **AI**: Google Gemini 2.5 (Speech-to-text + LLM), SarvamAI (TTS)
-- **Audio**: `.mp3` uploads, `.wav` synthesis
-- **Frontend**: React
-- **Secure Config**: `.env` file for API keys
-- **Deployment**: Firebase / Cloud Functions
+## 🌟 Features at a Glance
+
+| Capability          | Description                                                                 |
+|---------------------|-----------------------------------------------------------------------------|
+| 🎙️ Voice Input       | Users can **speak directly** to the bot in Odia or English                  |
+| 🔄 STT & Translation | **Gemini** handles **speech-to-text** and **Odia ↔️ English translation**    |
+| 🗣️ Realistic TTS     | **SarvamAI** converts AI replies into **natural regional voice**            |
+| 🧩 Modular Chat API  | Plug in any LLM (Claude, Gemini, OpenRouter) via `Services/openrouter.py`   |
+| 🧑‍💻 Fullstack Ready  | Modular **React frontend** + **FastAPI backend**                            |
+| 🔥 Firebase Ready    | REST APIs are compatible with **Cloud Functions** for easy deployment       |
 
 ---
 
-# Project Structure
-            -img here-
-  village-health-assistant/
-  │
-  ├── Services/
-  │ ├── stt.py # Speech to text using Gemini
-  │ ├── tts.py # Text to speech using SarvamAI
-  │
-  ├── tts_output/ # Stores generated audio files
-  ├── mps_TEST/ # Test MP3 files
-  ├── main.py # API routes (Firebase or FastAPI)
-  ├── .env # API keys
-  └── README.md
+## 🛠️ Tech Stack
 
-# How It Works
-               -img here-
+![Tech Stack](https://skillicons.dev/icons?i=python,fastapi,react,firebase,vite)
 
-1. **User speaks** → uploaded `.mp3`
-2. **Gemini** transcribes and translates to English
-3. **LLM** generates a smart response
-4. **SarvamAI** converts text to regional voice
-5. **Response** is returned via API or UI
+- **Backend**: FastAPI (Python 3.9+)
+- **Frontend**: React + Tailwind CSS
+- **AI & Audio**:
+  - Google **Gemini** (STT + LLM)
+  - **SarvamAI** (Text-to-speech for Indian languages)
+- **Audio Handling**: `.mp3` uploads, `.wav` synthesis, `ffmpeg` + `pydub`
+- **Deployment Options**: Firebase Functions or any cloud server
+- **Secrets**: `.env` files for API keys
 
 ---
 
-## Quick Start
+## 📦 Project Structure
 
-###  1. Clone the Repo
+```
+village-health-assistant/
+│
+├── Services/                  # Modular API wrappers
+│   ├── stt.py                 # Gemini: Speech to Text
+│   ├── tts.py                 # SarvamAI: Text to Speech
+│   ├── openrouter.py          # LLM Prompt Handler
+│
+├── tts_output/                # Stores generated voice files
+├── mps_TEST/                  # Local audio test assets
+├── main.py                    # FastAPI routes
+├── .env                       # Your API keys go here
+└── README.md
+```
 
+---
+
+## 🧬 How It Works
+
+```mermaid
+graph TD;
+  A[User speaks] --> B[.mp3 upload];
+  B --> C[Gemini STT & Translation];
+  C --> D[Prompt to LLM];
+  D --> E[Reply in simple language];
+  E --> F[SarvamAI → Speech];
+  F --> G[Send audio + text back to user];
+```
+
+🎯 Your assistant *listens, understands, speaks back* — in the user’s own language.
+
+---
+
+## 🚀 Quick Start (Local Setup)
+
+1. **Clone the Repo**
 ```bash
 git clone https://github.com/your-username/village-health-assistant.git
 cd village-health-assistant
+```
+
+2. **Install Python Requirements**
+```bash
+pip install -r requirements.txt
+```
+
+3. **Add `.env` File**
+```env
+OPENROUTER_API_KEY=sk-...
+SARVAMAI_API_KEY=your_sarvam_key
+```
+
+4. **Start Backend**
+```bash
+uvicorn Main:app --reload --host 0.0.0.0 --port 8000
+```
+
+5. **Frontend Setup**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
+
+## 📱 Mobile Demo (Local to Phone)
+
+Make sure:
+- Both phone + laptop on same Wi-Fi  
+- Use your **local IP** in frontend API calls (`http://192.168.x.x:8000`)  
+- Run backend with:
+```bash
+uvicorn Main:app --host 0.0.0.0 --port 8000
+```
+
+Now open frontend from mobile:  
+`https://project-village-health-bot.vercel.app`
+
+---
+
+## 🧠 Future Scope
+
+- ✅ Add more Indian languages (Bengali, Telugu, etc.)
+- 📞 Integrate IVR or WhatsApp for feature-phone users
+- 📊 Collect anonymous health insights for NGOs
+- 🔌 Offline support with cached responses
+
+---
+
+## ❤️ Made at [Odia Gen AI Hackathon 2025] by Team SahaAI
+
+> Designed for rural inclusion. Built with empathy. Scaled with AI.  
+>  
+> 🎤 Powered by your voice. Replied with care.
+
+---
