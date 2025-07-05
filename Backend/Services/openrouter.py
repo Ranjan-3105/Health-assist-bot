@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 api_key = os.getenv('OPENROUTER_API_KEY')
-print("Loaded API KEY:", api_key if api_key else "NOT FOUND")  # Debug: Show if key is loaded
+# print("Loaded API KEY:", api_key if api_key else "NOT FOUND")  # Debug: Show if key is loaded
+print("Loaded API KEY:", repr(api_key) if api_key else "NOT FOUND")  # 👈 This will show hidden characters
+
 
 async def ask_agent(message, language):
     prompt = (
