@@ -25,7 +25,7 @@ AI-powered multilingual health assistant for rural communities, powered by
 - **Backend**: FastAPI (Python)
 - **AI**: Google Gemini 2.5 (Speech-to-text + LLM), SarvamAI (TTS)
 - **Audio**: `.mp3` uploads, `.wav` synthesis
-- **Frontend**: React (optional)
+- **Frontend**: React
 - **Secure Config**: `.env` file for API keys
 - **Deployment**: Firebase / Cloud Functions
 
