@@ -73,7 +73,7 @@ async def handle_query(query: Query):
     lang_code = lang_map.get(query.language)
     if not lang_code:
         raise HTTPException(status_code=400, detail="Unsupported language")
-    lang_code = "hi" if query.language == "Hindi" else "or"
+    # lang_code = "hi" if query.language == "Hindi" else "or"
     print("📨 Received query:", query.message, "| Language:", query.language)
     audio_path = text_to_speech(reply, lang=lang_code)
     return {"reply": reply, "audio_path": f"/api/audio/{os.path.basename(audio_path)}"}
