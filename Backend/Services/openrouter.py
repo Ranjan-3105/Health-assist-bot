@@ -1,6 +1,8 @@
 import os
 import httpx
 from dotenv import load_dotenv
+from fastapi import HTTPException
+import traceback
 
 load_dotenv()
 api_key = os.getenv('OPENROUTER_API_KEY')

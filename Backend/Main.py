@@ -10,8 +10,10 @@ from Services.stt import speech_to_text
 
 app = FastAPI()
 
-origins = ["http://localhost:5173"]
-
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -71,6 +73,8 @@ async def handle_query(query: Query):
     lang_code = lang_map.get(query.language)
     if not lang_code:
         raise HTTPException(status_code=400, detail="Unsupported language")
+    lang_code = "hi" if query.language == "Hindi" else "or"
+    print("📨 Received query:", query.message, "| Language:", query.language)
     audio_path = text_to_speech(reply, lang=lang_code)
     return {"reply": reply, "audio_path": f"/api/audio/{os.path.basename(audio_path)}"}
 
@@ -85,4 +89,4 @@ def get_audio(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("Main:app", host="127.0.0.1", port=8000, reload=True)
