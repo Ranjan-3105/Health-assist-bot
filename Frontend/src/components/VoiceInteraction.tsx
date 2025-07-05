@@ -211,6 +211,9 @@ const VoiceInteraction: React.FC<VoiceInteractionProps> = ({ selectedLanguage })
         <p className="mt-3 text-gray-700 font-semibold">
           {isListening ? "ବନ୍ଦ କରିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ" : "କହିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ"}
         </p>
+        <p className="mt-3 text-gray-700 font-semibold">
+          {isListening ? "Tap To Stop" : "Tap To Speak"}
+        </p>
       </div>
 
       {/* Chat Container */}
