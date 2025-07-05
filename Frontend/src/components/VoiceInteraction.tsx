@@ -1,5 +1,12 @@
 import React, { useState, useRef } from "react";
-import { Mic, Loader2, MessageCircle, Volume2, Send } from "lucide-react";
+import {
+  Mic,
+  Loader2,
+  MessageCircle,
+  Volume2,
+  Send,
+  Pause,
+} from "lucide-react";
 
 interface ChatMessage {
   type: "user" | "bot";
@@ -16,6 +23,7 @@ const VoiceInteraction: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [textInput, setTextInput] = useState("");
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -51,16 +59,19 @@ const VoiceInteraction: React.FC = () => {
           },
           body: JSON.stringify({
             message: input,
-            language: "Hindi", // update dynamically if needed
+            language: "Odia",
           }),
         });
       } else {
         const formData = new FormData();
         formData.append("file", input, "voice_input.webm");
-        res = await fetch("/api/voice", {
-          method: "POST",
-          body: formData,
-        });
+        res = await fetch(
+          "http://localhost:8000/api/voice-query?language=Odia",
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
       }
 
       const data = await res.json();
@@ -155,9 +166,22 @@ const VoiceInteraction: React.FC = () => {
   };
 
   const handlePlayAudio = (url: string | undefined) => {
-    if (url && audioRef.current) {
+    if (!url || !audioRef.current) return;
+
+    // If the same audio is playing, pause it
+    if (currentlyPlaying === url && !audioRef.current.paused) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setCurrentlyPlaying(null);
+    } else {
       audioRef.current.src = url;
       audioRef.current.play();
+      setCurrentlyPlaying(url);
+
+      // When audio ends, clear the state
+      audioRef.current.onended = () => {
+        setCurrentlyPlaying(null);
+      };
     }
   };
 
@@ -211,7 +235,12 @@ const VoiceInteraction: React.FC = () => {
                       onClick={() => handlePlayAudio(msg.audioUrl)}
                       className="p-2 hover:bg-gray-200 rounded-full"
                     >
-                      <Volume2 className="w-4 h-4" />
+                      {currentlyPlaying === msg.audioUrl &&
+                      !audioRef.current?.paused ? (
+                        <Pause className="w-4 h-4" />
+                      ) : (
+                        <Volume2 className="w-4 h-4" />
+                      )}
                     </button>
                   )}
                 </div>

@@ -6,11 +6,13 @@ import traceback
 
 load_dotenv()
 
+#ମୋର ଜ୍ୱର ହେଇଛି 
+
 async def ask_agent(message: str, language: str) -> str:
     prompt = f"""
     You are a rural health assistant AI. A user says: '{message}'.
-    Explain the problem clearly, offer home care tips, and suggest when to see a doctor.
-    Respond in {language} using simple words.
+    clearly offer home care tips and suggest when to see a doctor.
+    Respond in {language} using simple and concise words.
     """
 
     headers = {
@@ -19,9 +21,9 @@ async def ask_agent(message: str, language: str) -> str:
     }
 
     payload = {
-        "model": "openai/gpt-3.5-turbo",
+        "model": "meta-llama/llama-3-70b-instruct",
         "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 300
+        "max_tokens": 1400
     }
 
     async with httpx.AsyncClient(timeout=10.0) as client:

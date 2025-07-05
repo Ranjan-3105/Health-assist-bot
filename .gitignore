@@ -27,3 +27,5 @@ Backend/venv
 
 # test files
 Backend/Services/mps_TEST
+
+Backend/Services/__pycache__

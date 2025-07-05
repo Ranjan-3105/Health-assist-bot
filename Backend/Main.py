@@ -46,7 +46,7 @@ async def voice_query(language: str, file: UploadFile = File(...)):
         reply = await ask_agent(user_prompt, language)
 
         # Text to Speech (local language)
-        lang_code = {"Hindi": "hi", "Odia": "or"}.get(language)
+        lang_code = {"Hindi": "hi-IN", "Odia": "od-IN"}.get(language)
         if not lang_code:
             raise HTTPException(status_code=400, detail="Unsupported language")
 
@@ -68,7 +68,7 @@ async def voice_query(language: str, file: UploadFile = File(...)):
 @app.post("/api/ask")
 async def handle_query(query: Query):
     reply = await ask_agent(query.message, query.language)
-    lang_code = "hi" if query.language == "Hindi" else "or"
+    lang_code = "hi-IN" if query.language == "Hindi" else "od-IN"
     print("📨 Received query:", query.message, "| Language:", query.language)
     audio_path = text_to_speech(reply, lang=lang_code)
     return {"reply": reply, "audio_path": f"/api/audio/{os.path.basename(audio_path)}"}
@@ -80,7 +80,7 @@ def get_audio(filename: str):
     path = os.path.join("tts_output", filename)
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Audio file not found")
-    return FileResponse(path, media_type="audio/mpeg", filename=filename)
+    return FileResponse(path, media_type="audio/wav", filename=filename)
 
 if __name__ == "__main__":
     import uvicorn
