@@ -27,7 +27,7 @@ const CallToAction: React.FC = () => {
                 Download Advice
               </h4>
               <p className="text-white/80 text-xs sm:text-sm mt-0.5">
-                सलाह डाउनलोड करें
+                ପରାମର୍ଶ ଡାଉନଲୋଡ୍ କରନ୍ତୁ
               </p>
             </div>
           </div>
@@ -47,7 +47,7 @@ const CallToAction: React.FC = () => {
                 Find Nearby Clinic
               </h4>
               <p className="text-white/80 text-xs sm:text-sm mt-0.5">
-                पास का क्लिनिक खोजें
+                ନିକଟସ୍ଥ ଏକ କ୍ଲିନିକ୍ ଖୋଜ
               </p>
             </div>
           </div>

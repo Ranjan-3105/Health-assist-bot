@@ -179,7 +179,7 @@ const VoiceInteraction: React.FC = () => {
           )}
         </button>
         <p className="mt-3 text-gray-700 font-semibold">
-          {isListening ? "Tap to Stop" : "Tap to Speak"}
+          {isListening ? "ବନ୍ଦ କରିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ" : "କହିବାକୁ ଟ୍ୟାପ୍ କରନ୍ତୁ"}
         </p>
       </div>
 

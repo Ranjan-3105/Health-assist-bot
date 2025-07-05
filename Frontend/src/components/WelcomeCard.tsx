@@ -10,13 +10,13 @@ const WelcomeCard: React.FC = () => {
             <Stethoscope className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 sm:mb-3">
-            नमस्ते! Namaste! 🙏
+            ନମସ୍କାର! Namaskar! 🙏
           </h2>
           <p className="text-base sm:text-lg text-gray-700 font-medium px-2">
             How can I help you today?
           </p>
-          <p className="text-sm text-gray-600 mt-1 sm:mt-2 px-2">
-            आज मैं आपकी कैसे सहायता कर सकता हूँ?
+          <p className="text-bold text-gray-600 mt-1 sm:mt-2 px-2">
+            ଆଜି ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?
           </p>
         </div>
       </div>

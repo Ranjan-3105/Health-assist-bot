@@ -2,10 +2,10 @@ import React from 'react';
 import { Thermometer, Wind, Baby, Ban as Bandage } from 'lucide-react';
 
 const quickHelpOptions = [
-  { icon: Thermometer, label: 'Fever', hindi: 'बुखार', color: 'from-red-400 to-orange-500' },
-  { icon: Wind, label: 'Cough', hindi: 'खांसी', color: 'from-blue-400 to-cyan-500' },
-  { icon: Baby, label: 'Child Care', hindi: 'बच्चों की देखभाल', color: 'from-pink-400 to-rose-500' },
-  { icon: Bandage, label: 'Wound Care', hindi: 'घाव की देखभाल', color: 'from-green-400 to-emerald-500' }
+  { icon: Thermometer, label: 'Fever', hindi: 'ଜ୍ୱର', color: 'from-red-400 to-orange-500' },
+  { icon: Wind, label: 'Cough', hindi: 'କାଶ', color: 'from-blue-400 to-cyan-500' },
+  { icon: Baby, label: 'Child Care', hindi: 'ଶିଶୁ ଯତ୍ନ', color: 'from-pink-400 to-rose-500' },
+  { icon: Bandage, label: 'Wound Care', hindi: 'କ୍ଷତ ଚିକିତ୍ସା', color: 'from-green-400 to-emerald-500' }
 ];
 
 const QuickAccessChips: React.FC = () => {
@@ -17,7 +17,7 @@ const QuickAccessChips: React.FC = () => {
   return (
     <div className="w-full max-w-4xl mx-auto mb-8 px-2">
       <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 text-center px-4">
-        Quick Help • तुरंत सहायता
+        Quick Help • ତୁରନ୍ତ ସହାୟତା
       </h3>
       
       <div className="grid grid-cols-2 gap-3 sm:gap-4 mx-2 sm:mx-0">
