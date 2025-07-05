@@ -130,7 +130,7 @@ Now open frontend from mobile:
 
 ---
 
-## ❤️ Made at [Odia Gen AI Hackathon 2025] by Team SahaAI
+## ❤️ Made at [Odia Gen AI Hackathon 2025] by Team 404 FOUND ⚡
 
 > Designed for rural inclusion. Built with empathy. Scaled with AI.  
 >  
