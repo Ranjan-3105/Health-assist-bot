@@ -1,3 +1,5 @@
+
+
 import React, { useState, useRef } from "react";
 import {
   Mic,
@@ -56,7 +58,7 @@ const VoiceInteraction: React.FC<VoiceInteractionProps> = ({ selectedLanguage })
       let res;
       // text input from user
       if (typeof input === "string") {
-        res = await fetch("http://127.0.0.1:8000/api/ask", {
+        res = await fetch("http://192.168.35.247:8000/api/ask", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -70,7 +72,7 @@ const VoiceInteraction: React.FC<VoiceInteractionProps> = ({ selectedLanguage })
         const formData = new FormData();
         formData.append("file", input, "voice_input.webm");
         res = await fetch(
-          `http://localhost:8000/api/voice-query?language=${selectedLanguage}`,
+          `http://192.168.35.247:8000/api/voice-query?language=${selectedLanguage}`,
           {
             method: "POST",
             body: formData,
@@ -83,7 +85,7 @@ const VoiceInteraction: React.FC<VoiceInteractionProps> = ({ selectedLanguage })
         type: "bot",
         message: data.reply || "Sorry, I didn't understand that.",
         timestamp: new Date(),
-        audioUrl: "http://127.0.0.1:8000" + data.audio_path,
+        audioUrl: "http://192.168.35.247:8000" + data.audio_path,
       };
 
       // ✅ Append bot message after response
