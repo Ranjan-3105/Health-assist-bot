@@ -40,5 +40,3 @@ def speech_to_text(file_path: str) -> str:
                 print(f"Deleted uploaded file from Gemini: {uploaded_file.name}")
         except Exception as cleanup_error:
             print(f"Error deleting uploaded file: {cleanup_error}")
-
-speech_to_text("D:/projects/Health-assist-bot/Backend/Services/mps_TEST/t5.mp3")

@@ -2,4 +2,6 @@ fastapi
 uvicorn
 httpx
 python-dotenv
-gTTS
+google-generativeai
+sarvamai
+python-multipart
