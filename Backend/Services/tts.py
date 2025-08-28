@@ -1,61 +1,65 @@
 import os
 import uuid
+import re
 from dotenv import load_dotenv
+from fastapi import HTTPException
 from sarvamai import SarvamAI
 from sarvamai.play import save
-from fastapi import HTTPException
-import re
 
+# Load environment variables
 load_dotenv()
 
 client = SarvamAI(api_subscription_key=os.getenv("SARVAM_API_KEY"))
 
 # Supported languages
 SUPPORTED_LANGUAGES = {
-    "bn-IN", "en-IN", "gu-IN", "hi-IN", "kn-IN", 
+    "bn-IN", "en-IN", "gu-IN", "hi-IN", "kn-IN",
     "ml-IN", "mr-IN", "od-IN", "pa-IN", "ta-IN", "te-IN"
 }
 
 
-
 def clean_text_for_tts(text: str) -> str:
-    # Remove markdown bullets
-    text = re.sub(r'[*•]', '', text)
-    # Add space after numbers like "1." or "2."
-    text = re.sub(r'(\d+)\.', r'\1.', text)
-    # Replace colons with short pauses
-    text = text.replace(":", ",")
-    # Remove excessive whitespace
-    text = re.sub(r'\s{2,}', ' ', text)
-    # Trim trailing English notes
-    text = re.split(r"Please note", text)[0]
+    """
+    Clean input text before sending to TTS.
+    """
+    text = re.sub(r'[*•]', '', text)                # Remove markdown bullets
+    text = re.sub(r'(\d+)\.', r'\1.', text)         # Normalize numbered lists
+    text = text.replace(":", ",")                   # Replace colons with pauses
+    text = re.sub(r'\s{2,}', ' ', text)             # Remove extra spaces
+    text = re.split(r"Please note", text)[0]        # Trim trailing notes
     return text.strip()
 
 
 def text_to_speech(text: str, lang: str = "od-IN") -> str:
+    """
+    Convert text to speech using SarvamAI TTS.
+    Returns path to generated audio file.
+    """
     if lang not in SUPPORTED_LANGUAGES:
         raise HTTPException(
             status_code=400,
-            detail=f"Unsupported language code '{lang}'. Must be one of {', '.join(SUPPORTED_LANGUAGES)}"
+            detail=f"Unsupported language code '{lang}'. "
+                   f"Must be one of {', '.join(sorted(SUPPORTED_LANGUAGES))}"
         )
 
-    # 🧼 Clean the input before TTS
     cleaned_text = clean_text_for_tts(text)
 
-    filename = f"tts_{uuid.uuid4().hex}.wav"
     output_dir = "tts_output"
     os.makedirs(output_dir, exist_ok=True)
+
+    filename = f"tts_{uuid.uuid4().hex}.wav"
     output_path = os.path.join(output_dir, filename)
+
     try:
         tts = client.text_to_speech.convert(
-            text=text,
+            text=cleaned_text,
             target_language_code=lang,
             speaker="hitesh",
             enable_preprocessing=True,
         )
         save(tts, output_path)
         return output_path
+
     except Exception as e:
-        print(f"SarvamAI TTS error: {e}")
-        raise
-    
+        print(f"❌ SarvamAI TTS error: {e}")
+        raise HTTPException(status_code=500, detail="TTS generation failed")
