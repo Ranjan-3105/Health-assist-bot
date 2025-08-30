@@ -55,7 +55,8 @@ async def voice_query(language: str, file: UploadFile = File(...)):
         lang_map = {
             "English": "en-IN",   # ✅ fixed
             "Hindi": "hi-IN",     # ✅ fixed
-            "Odia": "od-IN"       # ✅ fixed
+            "Odia": "od-IN" ,      # ✅ fixed
+            "Bengali": "bn-IN"   
         }
         lang_code = lang_map.get(language)
         if not lang_code:
